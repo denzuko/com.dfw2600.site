@@ -1,0 +1,6 @@
+{
+  "template": "create-react-app",
+  "hardReloadOnChange": true,
+  "infiniteLoopProtection": true,
+  "disableLogging": true
+}

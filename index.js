@@ -6,6 +6,6 @@ import * as serviceWorker from "./serviceWorker";
 
 import "./index.scss";
 
-render(<App />, document.querySelector("#root"));
+render(<App />, document.querySelector("body"));
 
 serviceWorker.unregister();

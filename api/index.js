@@ -1,7 +1,7 @@
 export default class Api {
   constructor(props) {
-    this.state.endpoint = "" || props.endpoint;
-    this.state.authToken = "" || props.authToken;
+    this.state.endpoint = props.endpoint || "";
+    this.state.authToken = props.authToken || "";
   }
 
   async findAll() {

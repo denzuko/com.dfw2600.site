@@ -16,7 +16,7 @@ export default class Banner extends Component {
       links: [
         { url: "/about", text: "About" },
         { url: "/topics", text: "Articles" },
-        { url: "/conduct", text: "Conduct" }
+        { url: "/code-of-conduct", text: "Conduct" }
       ]
     });
   }
@@ -37,7 +37,7 @@ export default class Banner extends Component {
 
         <Navbar.Section>
           {this.state.links.map((_) => (
-            <Button link>
+            <Button key={_.url} link>
               <Link to={_.url}>{_.text}</Link>
             </Button>
           ))}

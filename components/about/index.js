@@ -1,23 +1,41 @@
 import React, { Component } from "react";
-import { Grid, Heading } from "spectre-react";
+import {
+  Experiment,
+  emitter,
+  Variant,
+  experimentDebugger
+} from "@marvelapp/react-ab-test";
+
+import Dallas2600 from "./dallas2600";
+import Ndfw2600 from "./ndfw2600";
 
 export default class About extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
-      title: "Dallas 2600 Meetups"
+      defaultVariant: "dallas2600"
     };
+
+    // experimentDebugger.enable();
+
+    emitter.defineVariants("CityGroupExp", ["dallas2600", "ndfw2600"]);
+  }
+
+  componentDidMount() {
+    emitter.emitWin("CityGroupExp");
   }
 
   render() {
     return (
-      <Grid.Container>
-        <Grid.Row all={10}>
-          <Grid.Col offset="mr" all={8}>
-            <Heading renderAs="h3">{this.state.title}</Heading>
-          </Grid.Col>
-        </Grid.Row>
-      </Grid.Container>
+      <Experiment name="CityGroupExp">
+        <Variant name="dallas2600">
+          <Dallas2600 />
+        </Variant>
+        <Variant name="ndfw2600">
+          <Ndfw2600 />
+        </Variant>
+      </Experiment>
     );
   }
 }

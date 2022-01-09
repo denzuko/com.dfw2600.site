@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 
 import gql from "graphql-tag";
 
@@ -7,38 +7,63 @@ import useCacheEntry from "graphql-react/useCacheEntry.mjs";
 import useLoadGraphQL from "graphql-react/useLoadGraphQL.mjs";
 import useWaterfallLoad from "graphql-react/useWaterfallLoad.mjs";
 
-export function endpoint(region, projectId, env) {
-  return `https://api-${region}.graphcms.com/v2/${projectId}/${env}`;
-}
-
-export function Api(cacheKey, query, endpointConf, req) {
-  const cacheValue = useCacheEntry(cacheKey);
-  const loadGraphQL = useLoadGraphQL();
-  const load = useCallback(() =>
-    loadGraphQL(
-      cacheKey,
-      endpoint(endpointConf.region, endpointConf.id, endpointConf.env),
-      {
-        method: req.method || "POST",
-        headers: req.headers || {
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: req.body || gql`query() {}`
+export default class Api {
+  constructor(props) {
+    this.state = {
+      cacheKey: props.cacheKey || "",
+      region: props.projectRegion || "us-east-1",
+      id: props.projectId || "",
+      env: props.projectEnv || "master",
+      method: props.reqMethod || "POST",
+      headers: props.reqHeaders || {
+        "Content-Type": "application/json",
+        Accept: "application/json"
       },
-      [cacheKey, loadGraphQL]
-    )
-  );
+      query: props.query || gql`query() {}`,
+      vars: props.vars || []
+    };
 
-  useAutoLoad(cacheKey, load);
+    useAutoLoad(this.state.cacheKey, this.load());
+  }
 
-  const isWaterfallLoading = useWaterfallLoad(cacheKey, load);
+  isWaterfallLoading() {
+    return useWaterfallLoad(this.state.cacheKey, this.load());
+  }
 
-  return isWaterfallLoading
-    ? null
-    : cacheValue
-    ? cacheValue.errors
-      ? "Error!"
-      : cacheValue.data.repo.stargazers.totalCount
-    : "Loading…";
+  endpoint() {
+    return `https://api-${this.state.region}.graphcms.com/v2/${this.state.id}/${this.state.env}`;
+  }
+
+  cacheValue() {
+    return useCacheEntry(this.state.cacheKey);
+  }
+
+  loadGraphQL() {
+    return useLoadGraphQL();
+  }
+
+  load() {
+    return useCallback(() =>
+      this.loadGraphQL(
+        this.state.cacheKey,
+        this.endpoint(),
+        {
+          method: this.state.method,
+          headers: this.state.headers,
+          body: this.state.query
+        },
+        [this.state.cacheKey, this.loadGraphQL(), this.state.vars]
+      )
+    );
+  }
+
+  findAll() {
+    return this.isWaterfallLoading()
+      ? null
+      : this.cacheValue()
+      ? this.cacheValue().errors
+        ? "Error!"
+        : this.cacheValue().data
+      : "Loading…";
+  }
 }
